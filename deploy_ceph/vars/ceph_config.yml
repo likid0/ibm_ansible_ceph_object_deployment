@@ -1,0 +1,4 @@
+ceph_configurations:
+  - who: mon
+    option: mon_allow_pool_delete
+    value: true

@@ -1,0 +1,15 @@
+# Ingress Variables
+ingress_specs:
+  - name: 'rgw_ingress'
+    template: 'ingress_spec.j2'
+    # ID for the RGW ingress
+    ingress_id: 'rgw.client'
+    # Backend service for the RGW ingress
+    backend_service: 'rgw.rgw'
+    # Virtual IP address for the RGW ingress
+    virt_ip: '192.168.122.150/24'
+    # Frontend port for the RGW ingress
+    frontend_port: 443
+    # Monitoring port for the RGW ingress
+    monitor_port: 1967
+

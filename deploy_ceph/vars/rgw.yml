@@ -1,0 +1,46 @@
+# RGW Variables
+# Number of Placement Groups (PGs) for the EC data pool
+ec_data_pool_pg_num: 128
+# Number of Placement Group Peers (PGPs) for the EC data pool
+ec_data_pool_pgp_num: 128
+# Name of the EC profile to use
+ec_data_pool_profile: "default"
+# Number of data chunks for EC profile
+ec_data_pool_profile_k: 2
+# Number of coding chunks for EC profile
+ec_data_pool_profile_m: 1
+# RGW specifications for different realms and zones
+rgw_specs:
+  - name: 'rgw_spec_sync'
+    template: 'rgw_spec.j2'
+    # Label for the RGW sync instance
+    rgw_label: 'rgwsync'
+    # Number of RGW instances per host
+    rgw_count_per_host: 1
+    # Realm for the RGW sync instance
+    rgw_realm: 'multisite'
+    # Zone for the RGW sync instance
+    rgw_zone: 'zone1'
+    # Zone group for the RGW sync instance
+    rgw_zonegroup: 'multizg'
+    # Frontend port for the RGW sync instance
+    rgw_frontend_port: 8000
+    # ID for the RGW sync instance
+    rgw_id: 'rgwsync'
+
+  - name: 'rgw_spec'
+    template: 'rgw_spec.j2'
+    # Label for the RGW instance
+    rgw_label: 'rgw'
+    # Number of RGW instances per host
+    rgw_count_per_host: 1
+    # Realm for the RGW instance
+    rgw_realm: 'single'
+    # Zone for the RGW instance
+    rgw_zone: 'singlezone'
+    # Zone group for the RGW instance
+    rgw_zonegroup: 'singlezg'
+    # Frontend port for the RGW instance
+    rgw_frontend_port: 8001
+    # ID for the RGW instance
+    rgw_id: 'rgw'

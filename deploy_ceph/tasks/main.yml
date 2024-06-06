@@ -15,3 +15,6 @@
 - import_tasks: apply_service_spec_ingress.yml
   tags:
     - add_ingress
+- import_tasks: configure_ceph.yml
+  tags:
+    - configure_ceph

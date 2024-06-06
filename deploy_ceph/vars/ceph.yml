@@ -1,0 +1,25 @@
+# Ceph Bootstrap Variables
+# IP address of the monitor node
+monitor_address: "192.168.122.12"
+
+# Username for the Ceph dashboard
+dashboard_user: "admin"
+
+# Password for the Ceph dashboard
+dashboard_password: "admin"
+
+# Allow FQDN for hostnames in Ceph configuration
+allow_fqdn_hostname: true
+
+# URL for the container registry
+registry_url: "cp.icr.io/cp"
+
+# Username for the container registry
+registry_username: "cp"
+
+# Password for the container registry
+registry_password: "your_registry_password"
+
+# Flag to create a self-signed certificate for Ceph services
+create_self_signed_cert: true
+

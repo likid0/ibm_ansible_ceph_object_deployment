@@ -1,0 +1,13 @@
+# playbook.yml
+---
+- name: Bootstrap Ceph Cluster
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - role: deploy_ceph
+  vars_files:
+    - deploy_ceph/vars/ceph.yml
+    - deploy_ceph/vars/rgw.yml
+    - deploy_ceph/vars/ingress.yml
+    - deploy_ceph/vars/ceph_config.yml

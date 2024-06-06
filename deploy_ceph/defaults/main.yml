@@ -5,3 +5,11 @@ state: "login"
 allow_fqdn_hostname: false
 registry_url: "cp.icr.io/cp"
 registry_username: "cp"
+# defaults/main.yml
+ceph_dashboard_enabled: false
+ceph_dashboard_port: 8443
+ec_data_pool_pg_num: 128
+ec_data_pool_pgp_num: 128
+ec_data_pool_profile: "ecdata"
+ec_data_pool_profile_k: 2
+ec_data_pool_profile_m: 1

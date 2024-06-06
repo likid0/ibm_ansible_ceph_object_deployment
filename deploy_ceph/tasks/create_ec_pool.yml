@@ -1,0 +1,57 @@
+---
+- name: Debug EC pool variables
+  debug:
+    msg:
+      - "ec_data_pool_pg_num: {{ ec_data_pool_pg_num }}"
+      - "ec_data_pool_pgp_num: {{ ec_data_pool_pgp_num }}"
+      - "ec_data_pool_profile: {{ ec_data_pool_profile }}"
+      - "ec_data_pool_profile_k: {{ ec_data_pool_profile_k }}"
+      - "ec_data_pool_profile_m: {{ ec_data_pool_profile_m }}"
+      - "rgw_zone: {{ item.rgw_zone }}"
+  with_items: "{{ rgw_specs }}"
+  run_once: true
+
+- name: Check if EC profile exists
+  shell: ceph osd erasure-code-profile get {{ ec_data_pool_profile }}
+  register: ec_profile_exists
+  ignore_errors: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Debug EC profile existence result
+  debug:
+    var: ec_profile_exists
+  run_once: true
+
+- name: Create EC profile
+  shell: ceph osd erasure-code-profile set {{ ec_data_pool_profile }} k={{ ec_data_pool_profile_k }} m={{ ec_data_pool_profile_m }}
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  when: ec_profile_exists is failed or ec_profile_exists.rc != 0
+
+- name: Check if EC pool exists
+  shell: ceph osd pool get {{ item.rgw_zone }}.rgw.buckets.data
+  register: ec_pool_exists
+  ignore_errors: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+
+- name: Debug EC pool existence result
+  debug:
+    var: ec_pool_exists
+  run_once: true
+
+- name: Create EC pool
+  shell: ceph osd pool create {{ item.rgw_zone }}.rgw.buckets.data {{ ec_data_pool_pg_num }} {{ ec_data_pool_pgp_num }} erasure {{ ec_data_pool_profile }}
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: ec_pool_exists.results[0].rc is not defined or ec_pool_exists.results[0].rc != 0
+
+- name: Set EC pool application
+  shell: ceph osd pool application enable {{ item.rgw_zone }}.rgw.buckets.data rgw
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: ec_pool_exists.results[0].rc is not defined or ec_pool_exists.results[0].rc != 0

@@ -1,0 +1,32 @@
+---
+- name: Set Ceph configuration options
+  ceph_config:
+    action: set
+    who: "{{ item.who }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  loop: "{{ ceph_configurations }}"
+  tags: configure_ceph
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+
+- name: Get Ceph configuration options
+  ceph_config:
+    action: get
+    who: "{{ item.who }}"
+    option: "{{ item.option }}"
+  loop: "{{ ceph_configurations }}"
+  register: ceph_config_results
+  tags: configure_ceph
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+
+- name: Print current Ceph configuration settings
+  debug:
+    msg: "The value of '{{ item.item.option }}' for '{{ item.item.who }}' is {{ item.stdout }}"
+  loop: "{{ ceph_config_results.results }}"
+  tags: configure_ceph
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true

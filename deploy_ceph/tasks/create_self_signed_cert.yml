@@ -1,0 +1,55 @@
+- name: Generate a self-signed CA certificate
+  command: openssl req -x509 -new -nodes -keyout /tmp/ca.key -out /tmp/ca.crt -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Generate a private key
+  command: openssl genpkey -algorithm RSA -out /tmp/ceph.key -pkeyopt rsa_keygen_bits:2048
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Generate a certificate signing request (CSR)
+  command: openssl req -new -key /tmp/ceph.key -out /tmp/ceph.csr -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Generate a self-signed certificate
+  command: openssl x509 -req -in /tmp/ceph.csr -CA /tmp/ca.crt -CAkey /tmp/ca.key -CAcreateserial -out /tmp/ceph.crt -days 365 -sha256
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Read CA certificate
+  command: cat /tmp/ca.crt
+  register: ca_cert
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Read intermediate certificate (if exists)
+  command: cat /tmp/intermediate.crt
+  register: intermediate_cert
+  ignore_errors: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Read server certificate
+  command: cat /tmp/ceph.crt
+  register: server_cert
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Read private key
+  command: cat /tmp/ceph.key
+  register: private_key
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Set SSL certificate facts
+  set_fact:
+    ssl_cert: |
+      {{ server_cert.stdout }}
+      {% if intermediate_cert is defined %}
+      {{ intermediate_cert.stdout }}
+      {% endif %}
+      {{ private_key.stdout }}
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true

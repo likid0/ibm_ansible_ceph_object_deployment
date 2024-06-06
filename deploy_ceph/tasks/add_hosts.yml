@@ -1,0 +1,36 @@
+---
+- name: Gather facts for all hosts
+  ansible.builtin.setup:
+    gather_subset:
+      - 'all'
+
+- name: Extract Ceph cluster public SSH key
+  shell: |
+    ceph cephadm get-pub-key > /root/ceph.pub
+  register: ceph_pub_key_result
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  changed_when: false
+
+- name: Copy Ceph cluster public SSH key to new host
+  shell: |
+    ssh-copy-id -f -i /root/ceph.pub root@{{ inventory_hostname }}
+  delegate_to: "{{ groups['admin'][0] }}"
+
+- name: Ensure known hosts file is updated
+  ansible.builtin.shell: |
+    ssh-keyscan -H {{ ansible_facts['default_ipv4']['address'] }} >> /root/.ssh/known_hosts
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Debug hostname and IP
+  debug:
+    msg: "Hostname: {{ inventory_hostname }}, IP Address: {{ ansible_facts['default_ipv4']['address'] }}"
+
+- name: Add host to the Ceph cluster
+  when: inventory_hostname not in groups['admin']
+  ceph_orch_host:
+    name: "{{ inventory_hostname }}"
+    address: "{{ ansible_facts['default_ipv4']['address'] | default(ansible_facts['all_ipv4_addresses'][0]) }}"
+    labels: "{{ labels }}"
+  delegate_to: "{{ groups['admin'][0] }}"

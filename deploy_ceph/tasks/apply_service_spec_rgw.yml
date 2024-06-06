@@ -1,0 +1,39 @@
+- name: Retrieve Ceph fsid
+  shell: ceph fsid
+  register: ceph_fsid
+  run_once: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  changed_when: false
+
+- name: Set Ceph fsid fact
+  set_fact:
+    ceph_fsid: "{{ ceph_fsid.stdout }}"
+  run_once: true
+
+- name: Include tasks to create RGW resources
+  include_tasks: create_rgw_resources.yml
+  tags: rgw_resources
+
+- name: Render the RGW service spec templates
+  template:
+    src: "{{ item.template }}"
+    dest: "/tmp/{{ item.name }}.yml"
+  with_items: "{{ rgw_specs }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  vars:
+    rgw_id: "{{ item.rgw_id }}"
+    rgw_label: "{{ item.rgw_label }}"
+    rgw_count_per_host: "{{ item.rgw_count_per_host }}"
+    rgw_realm: "{{ item.rgw_realm }}"
+    rgw_zone: "{{ item.rgw_zone }}"
+    rgw_zonegroup: "{{ item.rgw_zonegroup }}"
+    rgw_frontend_port: "{{ item.rgw_frontend_port }}"
+
+- name: Apply the RGW service specs
+  ceph_orch_apply:
+    fsid: "{{ ceph_fsid }}"
+    spec: "{{ lookup('file', '/tmp/' + item.name + '.yml') }}"
+  with_items: "{{ rgw_specs }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true

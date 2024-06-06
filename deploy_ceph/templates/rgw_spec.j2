@@ -1,0 +1,10 @@
+service_type: rgw
+service_id: {{ rgw_id }}
+placement:
+  label: {{ rgw_label }}
+  count_per_host: {{ rgw_count_per_host }}
+rgw_realm: {{ rgw_realm }}
+rgw_zone: {{ rgw_zone }}
+rgw_zonegroup: {{ rgw_zonegroup }}
+spec:
+  rgw_frontend_port: {{ rgw_frontend_port }}

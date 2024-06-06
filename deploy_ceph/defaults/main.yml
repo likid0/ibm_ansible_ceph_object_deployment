@@ -1,0 +1,7 @@
+---
+dashboard_user: "admin"
+dashboard_password: "admin"
+state: "login"
+allow_fqdn_hostname: false
+registry_url: "cp.icr.io/cp"
+registry_username: "cp"

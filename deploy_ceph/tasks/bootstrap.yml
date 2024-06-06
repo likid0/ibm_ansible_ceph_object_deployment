@@ -1,0 +1,30 @@
+---
+- name: Check if Ceph cluster already exists
+  stat:
+    path: /etc/ceph/ceph.conf
+  register: ceph_conf
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Login to Ceph registry
+  cephadm_registry_login:
+    state: "{{ state }}"
+    registry_url: "{{ registry_url }}"
+    registry_username: "{{ registry_username }}"
+    registry_password: "{{ registry_password }}"
+
+- name: Set cluster_network fact if network_cidr is defined
+  set_fact:
+    cluster_network_fact: "{{ network_cidr }}"
+  when: network_cidr is defined
+
+- name: Bootstrap Ceph cluster
+  cephadm_bootstrap:
+    mon_ip: "{{ monitor_address }}"
+    dashboard_user: "{{ dashboard_user }}"
+    dashboard_password: "{{ dashboard_password }}"
+    allow_fqdn_hostname: "{{ allow_fqdn_hostname }}"
+    cluster_network: "{{ cluster_network_fact | default(omit) }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  when: ceph_conf.stat.exists == false

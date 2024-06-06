@@ -1,0 +1,28 @@
+- name: Retrieve Ceph fsid
+  shell: ceph fsid
+  register: ceph_fsid
+  run_once: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  changed_when: false
+
+- name: Set Ceph fsid fact
+  set_fact:
+    ceph_fsid: "{{ ceph_fsid.stdout }}"
+  run_once: true
+
+- name: Render the OSD service spec template
+  template:
+    src: "{{ item.template }}"
+    dest: "/tmp/{{ item.name }}.yml"
+  with_items:
+    - { name: 'osd_spec', template: 'osd_spec.j2' }
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Apply the OSD Ceph service spec
+  ceph_orch_apply:
+    spec: "{{ lookup('file', '/tmp/' + item.name + '.yml') }}"
+  with_items:
+    - { name: 'osd_spec' }
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true

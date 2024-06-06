@@ -1,0 +1,39 @@
+---
+- name: Retrieve Ceph fsid
+  shell: ceph fsid
+  register: ceph_fsid
+  run_once: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  changed_when: false
+
+- name: Set Ceph fsid fact
+  set_fact:
+    ceph_fsid: "{{ ceph_fsid.stdout }}"
+  run_once: true
+
+- name: Include self-signed certificate tasks
+  include_tasks: create_self_signed_cert.yml
+  when: create_self_signed_cert | default(false)
+
+- name: Render the RGW ingress service spec template
+  template:
+    src: "{{ item.template }}"
+    dest: "/tmp/{{ item.name }}.yml"
+  with_items: "{{ ingress_specs }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  vars:
+    ingress_id: "{{ item.ingress_id }}"
+    backend_service: "{{ item.backend_service }}"
+    virt_ip: "{{ item.virt_ip }}"
+    frontend_port: "{{ item.frontend_port }}"
+    ssl_cert: "{{ ssl_cert }}"
+
+- name: Apply the RGW ingress service spec
+  ceph_orch_apply:
+    fsid: "{{ ceph_fsid }}"
+    spec: "{{ lookup('file', '/tmp/' + item.name + '.yml') }}"
+  with_items: "{{ ingress_specs }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+

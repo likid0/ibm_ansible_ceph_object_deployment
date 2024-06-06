@@ -1,0 +1,80 @@
+# deploy_ceph/tasks/create_rgw_resources.yml
+---
+- name: Check if RGW realm exists
+  shell: radosgw-admin realm list | grep -w {{ item.rgw_realm }}
+  register: rgw_realm_exists
+  ignore_errors: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_realm is defined
+
+- name: Set fact for RGW realm existence
+  set_fact:
+    rgw_realm_exists_fact: "{{ rgw_realm_exists.results | selectattr('rc', 'equalto', 0) | list | length > 0 }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_realm is defined
+
+- name: Create RGW realm
+  shell: radosgw-admin realm create --rgw-realm={{ item.rgw_realm }}
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_realm is defined and not rgw_realm_exists_fact
+
+- name: Check if RGW zonegroup exists
+  shell: radosgw-admin zonegroup list | grep -w {{ item.rgw_zonegroup }}
+  register: rgw_zonegroup_exists
+  ignore_errors: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_zonegroup is defined
+
+- name: Set fact for RGW zonegroup existence
+  set_fact:
+    rgw_zonegroup_exists_fact: "{{ rgw_zonegroup_exists.results | selectattr('rc', 'equalto', 0) | list | length > 0 }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_zonegroup is defined
+
+- name: Create RGW zonegroup
+  shell: radosgw-admin zonegroup create --rgw-zonegroup={{ item.rgw_zonegroup }} --endpoints=http://{{ item.rgw_id }}:{{ item.rgw_frontend_port }} --master --default --rgw-realm={{ item.rgw_realm }}
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_zonegroup is defined and not rgw_zonegroup_exists_fact
+
+- name: Check if RGW zone exists
+  shell: radosgw-admin zone list | grep -w {{ item.rgw_zone }}
+  register: rgw_zone_exists
+  ignore_errors: true
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_zone is defined
+
+- name: Set fact for RGW zone existence
+  set_fact:
+    rgw_zone_exists_fact: "{{ rgw_zone_exists.results | selectattr('rc', 'equalto', 0) | list | length > 0 }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_zone is defined
+
+- name: Create RGW zone
+  shell: radosgw-admin zone create --rgw-zonegroup={{ item.rgw_zonegroup }} --rgw-zone={{ item.rgw_zone }} --access-key=sync --secret=sync --master --default --endpoints=http://{{ item.rgw_id }}:{{ item.rgw_frontend_port }} --rgw-realm={{ item.rgw_realm }}
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_zone is defined and not rgw_zone_exists_fact
+
+- name: Update RGW period
+  shell: radosgw-admin period update --commit --rgw-zonegroup={{ item.rgw_zonegroup }} --rgw-realm={{ item.rgw_realm }}
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+  with_items: "{{ rgw_specs }}"
+  when: item.rgw_realm is defined

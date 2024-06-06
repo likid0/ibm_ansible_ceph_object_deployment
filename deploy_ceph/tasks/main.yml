@@ -1,0 +1,17 @@
+# ceph_role/tasks/main.yml
+---
+- import_tasks: bootstrap.yml
+  tags: 
+    - bootstrap
+- import_tasks: add_hosts.yml
+  tags: 
+    - add_hosts
+- import_tasks: apply_service_spec_osd.yml
+  tags:
+    - add_osd
+- import_tasks: apply_service_spec_rgw.yml
+  tags:
+    - add_rgw
+- import_tasks: apply_service_spec_ingress.yml
+  tags:
+    - add_ingress

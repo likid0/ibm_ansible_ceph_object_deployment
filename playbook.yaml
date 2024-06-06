@@ -1,0 +1,44 @@
+# playbook.yml
+---
+- name: Bootstrap Ceph Cluster
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - role: deploy_ceph
+      vars:
+        monitor_address: "192.168.122.12"
+        dashboard_user: "admin"
+        dashboard_password: "admin"
+        allow_fqdn_hostname: true
+        registry_url: "cp.icr.io/cp"
+        registry_username: "XX"
+        registry_password: "XX"
+      rgw_specs:
+        - name: 'rgw_spec_sync'
+          template: 'rgw_spec.j2'
+          rgw_label: 'rgwsync'
+          rgw_count_per_host: 1
+          rgw_realm: 'multisite'
+          rgw_zone: 'zone1'
+          rgw_zonegroup: 'multizg'
+          rgw_frontend_port: 8000
+          rgw_id: 'rgwsync'
+        - name: 'rgw_spec'
+          template: 'rgw_spec.j2'
+          rgw_label: 'rgw'
+          rgw_count_per_host: 1
+          rgw_realm: 'single'
+          rgw_zone: 'singlezone'
+          rgw_zonegroup: 'singlezg'
+          rgw_frontend_port: 8001
+          rgw_id: 'rgw'
+      ingress_specs:
+        - name: 'rgw_ingress'
+          template: 'ingress_spec.j2'
+          ingress_id: 'rgw.client'
+          backend_service: 'rgw.rgw'
+          virt_ip: '192.168.122.150/24'
+          frontend_port: 443
+          monitor_port: 1967
+      create_self_signed_cert: true

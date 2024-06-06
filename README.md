@@ -19,6 +19,7 @@ To run the playbook, you can use the provided bash wrapper script `run_ceph_depl
 
 ```bash
 ./ansible_wrapper.sh [-t <tags>] [-l <log_file>]
+```
 
 
 ## Variables

@@ -2,35 +2,23 @@
 
 This project automates the deployment of a Ceph cluster using Ansible. It includes playbooks and roles to bootstrap the Ceph cluster, add hosts, apply service specifications for OSDs (Object Storage Daemons), RGW (RADOS Gateway), and ingress services.
 
-deploy_ceph
-├── defaults
-│   └── main.yml
-├── files
-├── handlers
-│   └── main.yml
-├── meta
-│   └── main.yml
-├── README.md
-├── tasks
-│   ├── add_hosts.yml
-│   ├── apply_service_spec_ingress.yml
-│   ├── apply_service_spec_osd.yml
-│   ├── apply_service_spec_rgw.yml
-│   ├── bootstrap.yml
-│   ├── create_ec_pool.yml
-│   ├── create_rgw_resources.yml
-│   ├── create_self_signed_cert.yml
-│   └── main.yml
-├── templates
-│   ├── ingress_spec.j2
-│   ├── osd_spec.j2
-│   └── rgw_spec.j2
-└── vars
-    ├── ceph.yml
-    ├── ingress.yml
-    ├── main.yml
-    └── rgw.yml
+## Usage
 
+### Pre-req
+- RHEL Deployed
+- We need Ansible setup and all cluster nodes accessible with passwordles SSH
+- the IBM Storage Ceph tools repos enabled.
+- cephadm-ansible RPM installed.
+- Modify this Role variables
+
+### Running the Playbook
+
+To run the playbook, you can use the provided bash wrapper script `run_ceph_deploy.sh`.
+
+#### Script Usage
+
+```bash
+./ansible_wrapper.sh [-t <tags>] [-l <log_file>]
 
 
 ## Variables
@@ -69,31 +57,3 @@ deploy_ceph
   - `virt_ip`: Virtual IP address for the ingress.
   - `frontend_port`: Frontend port for the ingress.
   - `monitor_port`: Monitor port for the ingress.
-
-## Roles
-
-### deploy_ceph
-
-This role includes tasks for:
-- Bootstrapping the Ceph cluster (`bootstrap.yml`)
-- Adding hosts to the Ceph cluster (`add_hosts.yml`)
-- Applying service specifications for OSDs (`apply_service_spec_osd.yml`)
-- Applying service specifications for RGW (`apply_service_spec_rgw.yml`)
-- Applying service specifications for ingress (`apply_service_spec_ingress.yml`)
-- Creating EC (Erasure Coded) pools (`create_ec_pool.yml`)
-
-## Usage
-
-### Pre-req
-
-We need Ansible setup, the IBM Storage Ceph tools repos enabled.
-
-### Running the Playbook
-
-To run the playbook, you can use the provided bash wrapper script `ansible_wrapper.sh`.
-
-#### Script Usage
-
-```bash
-./ansible_wrapper.sh [-t <tags>] [-l <log_file>]
-

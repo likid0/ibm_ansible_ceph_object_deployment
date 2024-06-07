@@ -1,11 +1,14 @@
 ---
+- name: Gather facts
+  ansible.builtin.setup:
+
 - name: Register with Red Hat subscription
   redhat_subscription:
     state: present
     username: "{{ rhel_subscription_username }}"
     password: "{{ rhel_subscription_password }}"
     autosubscribe: yes
-  when: ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"
+  when: ansible_facts['os_family'] == 'RedHat'
 
 - name: Enable necessary repositories
   dnf:
@@ -15,4 +18,4 @@
   with_items:
     - rhel-9-for-x86_64-baseos-rpms
     - rhel-9-for-x86_64-appstream-rpms
-  when: ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"
+  when: ansible_facts['os_family'] == 'RedHat'

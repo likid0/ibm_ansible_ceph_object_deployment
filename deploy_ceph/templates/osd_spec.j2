@@ -1,7 +1,21 @@
 service_type: osd
-service_id: osd
+service_id: {{ osd_config.service_id }}
 placement:
-  label: osd
+  label: '{{ osd_config.placement.label }}'
 spec:
   data_devices:
-    all: true
+    {% for key, value in osd_config.data_devices.items() %}
+    {{ key }}: {{ value }}
+    {% endfor %}
+  {% if osd_config.db_devices is defined %}
+  db_devices:
+    {% for key, value in osd_config.db_devices.items() %}
+    {{ key }}: {{ value }}
+    {% endfor %}
+  {% endif %}
+  {% if osd_config.wal_devices is defined %}
+  wal_devices:
+    {% for key, value in osd_config.wal_devices.items() %}
+    {{ key }}: {{ value }}
+    {% endfor %}
+  {% endif %}

@@ -1,86 +1,98 @@
 #!/bin/bash
 
-# Define colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Default log file
-LOG_FILE="/var/log/ansible_playbook_ceph_deploy.log"
+declare -A tag_descriptions=(
+  ["bootstrap"]="Bootstrap the Ceph cluster."
+  ["add_hosts"]="Add hosts to the Ceph cluster."
+  ["add_osd"]="Apply OSD (Object Storage Daemon) service specifications."
+  ["add_rgw"]="Apply RGW (RADOS Gateway) service specifications."
+  ["add_ingress"]="Apply ingress service specifications."
+  ["preflight"]="Run preflight checks."
+  ["rhel_registration"]="Register RHEL and enable required repositories."
+  ["enable_ibm_repo"]="Enable IBM Ceph repository and install cephadm-ansible."
+  ["update_os"]="Update the OS to the latest version and install necessary packages."
+)
 
-# Path to Ansible playbook
-PLAYBOOK="ceph_deploy.yml"
-
-# Available tags
-AVAILABLE_TAGS="bootstrap,add_hosts,add_osd,add_rgw,add_ingress"
-
-# Custom module path
-MODULE_PATH="/usr/share/cephadm-ansible"
-
-# Help function
-function show_help {
-    echo -e "${YELLOW}Usage: $0 [-t <tags>] [-l <log_file>]${NC}"
-    echo -e "${YELLOW}  -t <tags>     Comma-separated list of tags to run specific parts of the playbook${NC}"
-    echo -e "${YELLOW}  -l <log_file> Path to the log file (default: /var/log/ansible_playbook.log)${NC}"
-    echo -e "${YELLOW}Available tags: ${AVAILABLE_TAGS}${NC}"
+list_tags() {
+  echo -e "${YELLOW}Available tags:${NC}"
+  for tag in "${!tag_descriptions[@]}"; do
+    echo -e "  ${GREEN}${tag}${NC}: ${tag_descriptions[$tag]}"
+  done
 }
 
-# Check if cephadm-ansible package is installed
-if ! rpm -q cephadm-ansible > /dev/null 2>&1; then
-    echo -e "${RED}The cephadm-ansible package is not installed on this host.${NC}"
-    echo -e "${RED}Please install cephadm-ansible before running this script.${NC}"
-    exit 1
-fi
+usage() {
+  echo -e "${YELLOW}Usage: run_ceph_deploy.sh [-t tags] [-l logfile]${NC}"
+  echo "  -t, --tags    Comma-separated list of tags to run. If 'preflight' is included, preflight checks will be performed."
+  echo "  -l, --logfile Path to the logfile."
+  echo
+  list_tags
+  exit 1
+}
 
-# Parse command line arguments
-while getopts ":t:l:h" opt; do
-  case ${opt} in
-    t )
-      TAGS=$OPTARG
+tags=""
+logfile=""
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    -t|--tags)
+      tags="$2"
+      shift
       ;;
-    l )
-      LOG_FILE=$OPTARG
+    -l|--logfile)
+      logfile="$2"
+      shift
       ;;
-    h )
-      show_help
-      exit 0
-      ;;
-    \? )
-      echo -e "${RED}Invalid option: -$OPTARG${NC}" 1>&2
-      show_help
-      exit 1
-      ;;
-    : )
-      echo -e "${RED}Invalid option: -$OPTARG requires an argument${NC}" 1>&2
-      show_help
-      exit 1
+    *)
+      usage
       ;;
   esac
+  shift
 done
-shift $((OPTIND -1))
 
-# Check if tags are provided
-if [ -z "$TAGS" ]; then
-  echo -e "${RED}No tags specified. Available tags: ${AVAILABLE_TAGS}${NC}" 1>&2
-  show_help
+if [ -z "$tags" ]; then
+  usage
+  exit 0
+fi
+
+if [ -z "$logfile" ]; then
+  echo -e "${RED}Error: Logfile not specified.${NC}"
+  usage
+fi
+
+IFS=',' read -r -a tag_array <<< "$tags"
+
+# Check for 'preflight' tag
+run_preflight=false
+for tag in "${tag_array[@]}"; do
+  if [ "$tag" == "preflight" ]; then
+    run_preflight=true
+    break
+  fi
+done
+
+if [ "$run_preflight" = true ]; then
+  echo -e "${GREEN}Running preflight checks...${NC}"
+  ansible-playbook -i inventory /usr/share/cephadm-ansible/cephadm-preflight.yml --extra-vars "ceph_origin=ibm" | tee -a "$logfile"
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}Preflight checks failed. Exiting...${NC}"
+    exit 1
+  fi
+fi
+
+if ! rpm -q cephadm-ansible &> /dev/null; then
+  echo -e "${RED}Error: cephadm-ansible package is not installed.${NC}"
   exit 1
 fi
 
-# Run the preflight playbook
-echo -e "${GREEN}Running preflight checks...${NC}"
-#ansible-playbook -i inventory ${MODULE_PATH}/cephadm-preflight.yml --extra-vars "ceph_origin=ibm"
-
-
-# Run Ansible playbook with specified tags
-echo -e "${BLUE}Running Ansible playbook with tags: ${TAGS}${NC}"
-ANSIBLE_LIBRARY=${MODULE_PATH} ansible-playbook ${PLAYBOOK} --tags ${TAGS} | tee ${LOG_FILE}
-
-# Check if the playbook ran successfully
-if [ $? -eq 0 ]; then
-  echo -e "${GREEN}Playbook executed successfully.${NC}"
-else
-  echo -e "${RED}Playbook execution failed.${NC}"
+echo -e "${GREEN}Running Ansible playbook with tags: ${tags}${NC}"
+ansible-playbook -i inventory ceph_deploy.yml --tags "${tags}" | tee -a "$logfile"
+if [ $? -ne 0 ]; then
+  echo -e "${RED}Ansible playbook execution failed.${NC}"
   exit 1
 fi
+
+echo -e "${GREEN}Ansible playbook execution completed successfully.${NC}"
+

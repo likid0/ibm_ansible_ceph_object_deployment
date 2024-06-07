@@ -11,3 +11,4 @@
     - deploy_ceph/vars/rgw.yml
     - deploy_ceph/vars/ingress.yml
     - deploy_ceph/vars/ceph_config.yml
+    - deploy_ceph/vars/osd.yml  

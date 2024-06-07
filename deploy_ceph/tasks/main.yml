@@ -1,5 +1,14 @@
 # ceph_role/tasks/main.yml
 ---
+- import_tasks: register_rhel.yml
+  tags: 
+    - rhel_registration
+- import_tasks: update_os.yml
+  tags:
+    - update_os
+- import_tasks: enable_ibm_ceph_repo.yml
+  tags:
+    - enable_ibm_repo
 - import_tasks: bootstrap.yml
   tags: 
     - bootstrap

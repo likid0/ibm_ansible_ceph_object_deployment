@@ -1,0 +1,42 @@
+---
+- name: Check Timezone and Time Synchronization
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Get timezone and time synchronization status
+      ansible.builtin.command: timedatectl
+      register: timedatectl_output
+
+    - name: Debug timezone and time synchronization status
+      debug:
+        var: timedatectl_output.stdout_lines
+
+    - name: Parse timezone from timedatectl output
+      set_fact:
+        timezone: "{{ timedatectl_output.stdout_lines | select('search', 'Time zone:') | list | first | regex_replace('Time zone: ', '') | regex_replace(' \\(.*', '') }}"
+
+    - name: Parse NTP synchronized status from timedatectl output
+      set_fact:
+        ntp_synchronized: "{{ timedatectl_output.stdout_lines | select('search', 'NTP synchronized:') | list | first | regex_replace('NTP synchronized: ', '') == 'yes' }}"
+
+- name: Verify Timezone and Time Synchronization Across All Nodes
+  hosts: localhost
+  tasks:
+    - name: Gather timezones from all nodes
+      set_fact:
+        timezones: "{{ hostvars | dict2items | selectattr('value.timezone', 'defined') | map(attribute='value.timezone') | list }}"
+
+    - name: Ensure all nodes have the same timezone
+      fail:
+        msg: "Timezones are not the same across all nodes: {{ timezones }}"
+      when: timezones | unique | length > 1
+
+    - name: Gather NTP synchronization status from all nodes
+      set_fact:
+        ntp_status: "{{ hostvars | dict2items | selectattr('value.ntp_synchronized', 'defined') | map(attribute='value.ntp_synchronized') | list }}"
+
+    - name: Ensure all nodes are NTP synchronized
+      fail:
+        msg: "Not all nodes are NTP synchronized: {{ ntp_status }}"
+      when: ntp_status | unique | length > 1 or ntp_status | unique | first == false

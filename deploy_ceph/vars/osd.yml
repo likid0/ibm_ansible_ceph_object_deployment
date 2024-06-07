@@ -1,0 +1,17 @@
+# OSD configurations
+osd_configurations:
+  basic:
+    service_id: osd_spec_default
+    placement:
+      label: osd
+    data_devices:
+      all: true
+
+  hdd_ssd_split:
+    service_id: osd_spec_hdd_ssd_split
+    placement:
+      label: osd
+    data_devices:
+      rotational: 1
+    db_devices:
+      rotational: 0

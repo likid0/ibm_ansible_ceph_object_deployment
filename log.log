@@ -1,0 +1,287 @@
+
+PLAY [Bootstrap Ceph Cluster] **************************************************
+
+TASK [Gathering Facts] *********************************************************
+Friday 07 June 2024  03:13:03 -0400 (0:00:00.030)       0:00:00.030 *********** 
+ok: [ceph-node-03.cephlab.com]
+ok: [ceph-node-00.cephlab.com]
+ok: [ceph-node-01.cephlab.com]
+ok: [ceph-node-02.cephlab.com]
+
+TASK [deploy_ceph : Update all OS packages] ************************************
+Friday 07 June 2024  03:13:06 -0400 (0:00:02.925)       0:00:02.956 *********** 
+ok: [ceph-node-00.cephlab.com]
+ok: [ceph-node-02.cephlab.com]
+ok: [ceph-node-01.cephlab.com]
+ok: [ceph-node-03.cephlab.com]
+
+TASK [deploy_ceph : Reboot the server] *****************************************
+Friday 07 June 2024  03:13:13 -0400 (0:00:07.363)       0:00:10.319 *********** 
+skipping: [ceph-node-01.cephlab.com]
+skipping: [ceph-node-02.cephlab.com]
+skipping: [ceph-node-03.cephlab.com]
+skipping: [ceph-node-00.cephlab.com]
+
+TASK [deploy_ceph : Wait for the reboot and reconnect] *************************
+Friday 07 June 2024  03:13:13 -0400 (0:00:00.059)       0:00:10.379 *********** 
+ok: [ceph-node-02.cephlab.com]
+ok: [ceph-node-00.cephlab.com]
+ok: [ceph-node-03.cephlab.com]
+ok: [ceph-node-01.cephlab.com]
+
+TASK [deploy_ceph : Check the Uptime of the servers] ***************************
+Friday 07 June 2024  03:13:34 -0400 (0:00:21.136)       0:00:31.515 *********** 
+changed: [ceph-node-02.cephlab.com]
+changed: [ceph-node-00.cephlab.com]
+changed: [ceph-node-03.cephlab.com]
+changed: [ceph-node-01.cephlab.com]
+
+TASK [deploy_ceph : debug] *****************************************************
+Friday 07 June 2024  03:13:35 -0400 (0:00:00.445)       0:00:31.961 *********** 
+ok: [ceph-node-01.cephlab.com] => 
+  Uptime:
+    changed: true
+    cmd: uptime
+    delta: '0:00:00.019444'
+    end: '2024-06-07 03:13:35.100021'
+    failed: false
+    msg: ''
+    rc: 0
+    start: '2024-06-07 03:13:35.080577'
+    stderr: ''
+    stderr_lines: []
+    stdout: ' 03:13:35 up 3 days, 16:14,  0 users,  load average: 0.47, 0.45, 0.48'
+    stdout_lines:
+    - ' 03:13:35 up 3 days, 16:14,  0 users,  load average: 0.47, 0.45, 0.48'
+ok: [ceph-node-02.cephlab.com] => 
+  Uptime:
+    changed: true
+    cmd: uptime
+    delta: '0:00:00.010330'
+    end: '2024-06-07 03:13:35.063030'
+    failed: false
+    msg: ''
+    rc: 0
+    start: '2024-06-07 03:13:35.052700'
+    stderr: ''
+    stderr_lines: []
+    stdout: ' 03:13:35 up 3 days, 16:14,  0 users,  load average: 0.24, 0.50, 0.59'
+    stdout_lines:
+    - ' 03:13:35 up 3 days, 16:14,  0 users,  load average: 0.24, 0.50, 0.59'
+ok: [ceph-node-03.cephlab.com] => 
+  Uptime:
+    changed: true
+    cmd: uptime
+    delta: '0:00:00.027333'
+    end: '2024-06-07 03:13:35.098279'
+    failed: false
+    msg: ''
+    rc: 0
+    start: '2024-06-07 03:13:35.070946'
+    stderr: ''
+    stderr_lines: []
+    stdout: ' 03:13:35 up 3 days, 16:14,  0 users,  load average: 0.34, 0.29, 0.35'
+    stdout_lines:
+    - ' 03:13:35 up 3 days, 16:14,  0 users,  load average: 0.34, 0.29, 0.35'
+ok: [ceph-node-00.cephlab.com] => 
+  Uptime:
+    changed: true
+    cmd: uptime
+    delta: '0:00:00.011668'
+    end: '2024-06-07 03:13:35.095798'
+    failed: false
+    msg: ''
+    rc: 0
+    start: '2024-06-07 03:13:35.084130'
+    stderr: ''
+    stderr_lines: []
+    stdout: ' 03:13:35 up 3 days, 16:14,  1 user,  load average: 0.09, 0.19, 0.23'
+    stdout_lines:
+    - ' 03:13:35 up 3 days, 16:14,  1 user,  load average: 0.09, 0.19, 0.23'
+
+TASK [deploy_ceph : Install necessary packages] ********************************
+Friday 07 June 2024  03:13:35 -0400 (0:00:00.052)       0:00:32.014 *********** 
+changed: [ceph-node-03.cephlab.com] => (item=python3-dns.noarch)
+changed: [ceph-node-02.cephlab.com] => (item=python3-dns.noarch)
+changed: [ceph-node-00.cephlab.com] => (item=python3-dns.noarch)
+changed: [ceph-node-03.cephlab.com] => (item=python3-pyOpenSSL.noarch)
+changed: [ceph-node-02.cephlab.com] => (item=python3-pyOpenSSL.noarch)
+changed: [ceph-node-02.cephlab.com] => (item=bind-utils)
+changed: [ceph-node-03.cephlab.com] => (item=bind-utils)
+changed: [ceph-node-02.cephlab.com] => (item=nc)
+changed: [ceph-node-03.cephlab.com] => (item=nc)
+changed: [ceph-node-00.cephlab.com] => (item=python3-pyOpenSSL.noarch)
+changed: [ceph-node-01.cephlab.com] => (item=python3-dns.noarch)
+changed: [ceph-node-01.cephlab.com] => (item=python3-pyOpenSSL.noarch)
+changed: [ceph-node-00.cephlab.com] => (item=bind-utils)
+changed: [ceph-node-02.cephlab.com] => (item=vim)
+changed: [ceph-node-03.cephlab.com] => (item=vim)
+changed: [ceph-node-00.cephlab.com] => (item=nc)
+changed: [ceph-node-01.cephlab.com] => (item=bind-utils)
+changed: [ceph-node-02.cephlab.com] => (item=python3-pip.noarch)
+changed: [ceph-node-03.cephlab.com] => (item=python3-pip.noarch)
+changed: [ceph-node-01.cephlab.com] => (item=nc)
+changed: [ceph-node-00.cephlab.com] => (item=vim)
+changed: [ceph-node-01.cephlab.com] => (item=vim)
+changed: [ceph-node-00.cephlab.com] => (item=python3-pip.noarch)
+changed: [ceph-node-01.cephlab.com] => (item=python3-pip.noarch)
+
+TASK [deploy_ceph : Drop DNF Cache] ********************************************
+Friday 07 June 2024  03:14:36 -0400 (0:01:01.019)       0:01:33.033 *********** 
+changed: [ceph-node-01.cephlab.com]
+changed: [ceph-node-02.cephlab.com]
+changed: [ceph-node-03.cephlab.com]
+changed: [ceph-node-00.cephlab.com]
+
+PLAY RECAP *********************************************************************
+ceph-node-00.cephlab.com   : ok=7    changed=3    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+ceph-node-01.cephlab.com   : ok=7    changed=3    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+ceph-node-02.cephlab.com   : ok=7    changed=3    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+ceph-node-03.cephlab.com   : ok=7    changed=3    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+
+Friday 07 June 2024  03:14:37 -0400 (0:00:00.904)       0:01:33.938 *********** 
+=============================================================================== 
+deploy_ceph : Install necessary packages ------------------------------- 61.02s
+deploy_ceph : Wait for the reboot and reconnect ------------------------ 21.14s
+deploy_ceph : Update all OS packages ------------------------------------ 7.36s
+Gathering Facts --------------------------------------------------------- 2.93s
+deploy_ceph : Drop DNF Cache -------------------------------------------- 0.90s
+deploy_ceph : Check the Uptime of the servers --------------------------- 0.45s
+deploy_ceph : Reboot the server ----------------------------------------- 0.06s
+deploy_ceph : debug ----------------------------------------------------- 0.05s
+
+PLAY [Bootstrap Ceph Cluster] **************************************************
+
+PLAY RECAP *********************************************************************
+
+Friday 07 June 2024  03:19:09 -0400 (0:00:00.188)       0:00:00.188 *********** 
+=============================================================================== 
+
+PLAY [Bootstrap Ceph Cluster] **************************************************
+
+TASK [deploy_ceph : Register with Red Hat subscription] ************************
+Friday 07 June 2024  03:19:23 -0400 (0:00:00.104)       0:00:00.104 *********** 
+fatal: [ceph-node-01.cephlab.com]: FAILED! => 
+  msg: |-
+    The conditional check 'ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"' failed. The error was: error while evaluating conditional (ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"): 'ansible_distribution' is undefined. 'ansible_distribution' is undefined
+  
+    The error appears to be in '/root/ibm_ceph_ansible_deploy/deploy_ceph/tasks/register_rhel.yml': line 2, column 3, but may
+    be elsewhere in the file depending on the exact syntax problem.
+  
+    The offending line appears to be:
+  
+    ---
+    - name: Register with Red Hat subscription
+      ^ here
+fatal: [ceph-node-02.cephlab.com]: FAILED! => 
+  msg: |-
+    The conditional check 'ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"' failed. The error was: error while evaluating conditional (ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"): 'ansible_distribution' is undefined. 'ansible_distribution' is undefined
+  
+    The error appears to be in '/root/ibm_ceph_ansible_deploy/deploy_ceph/tasks/register_rhel.yml': line 2, column 3, but may
+    be elsewhere in the file depending on the exact syntax problem.
+  
+    The offending line appears to be:
+  
+    ---
+    - name: Register with Red Hat subscription
+      ^ here
+fatal: [ceph-node-03.cephlab.com]: FAILED! => 
+  msg: |-
+    The conditional check 'ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"' failed. The error was: error while evaluating conditional (ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"): 'ansible_distribution' is undefined. 'ansible_distribution' is undefined
+  
+    The error appears to be in '/root/ibm_ceph_ansible_deploy/deploy_ceph/tasks/register_rhel.yml': line 2, column 3, but may
+    be elsewhere in the file depending on the exact syntax problem.
+  
+    The offending line appears to be:
+  
+    ---
+    - name: Register with Red Hat subscription
+      ^ here
+fatal: [ceph-node-00.cephlab.com]: FAILED! => 
+  msg: |-
+    The conditional check 'ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"' failed. The error was: error while evaluating conditional (ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"): 'ansible_distribution' is undefined. 'ansible_distribution' is undefined
+  
+    The error appears to be in '/root/ibm_ceph_ansible_deploy/deploy_ceph/tasks/register_rhel.yml': line 2, column 3, but may
+    be elsewhere in the file depending on the exact syntax problem.
+  
+    The offending line appears to be:
+  
+    ---
+    - name: Register with Red Hat subscription
+      ^ here
+
+PLAY RECAP *********************************************************************
+ceph-node-00.cephlab.com   : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+ceph-node-01.cephlab.com   : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+ceph-node-02.cephlab.com   : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+ceph-node-03.cephlab.com   : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+
+Friday 07 June 2024  03:19:23 -0400 (0:00:00.047)       0:00:00.151 *********** 
+=============================================================================== 
+deploy_ceph : Register with Red Hat subscription ------------------------ 0.05s
+
+PLAY [Bootstrap Ceph Cluster] **************************************************
+
+TASK [deploy_ceph : Enable IBM Ceph repository] ********************************
+Friday 07 June 2024  03:26:29 -0400 (0:00:00.098)       0:00:00.098 *********** 
+fatal: [ceph-node-01.cephlab.com]: FAILED! => changed=false 
+  msg: 'Unsupported parameters for (ansible.builtin.get_url) module: register. Supported parameters include: attributes, backup, checksum, ciphers, client_cert, client_key, decompress, dest, force, force_basic_auth, group, headers, http_agent, mode, owner, selevel, serole, setype, seuser, timeout, tmp_dest, unredirected_headers, unsafe_writes, url, url_password, url_username, use_gssapi, use_netrc, use_proxy, validate_certs (attr, password, username).'
+fatal: [ceph-node-03.cephlab.com]: FAILED! => changed=false 
+  msg: 'Unsupported parameters for (ansible.builtin.get_url) module: register. Supported parameters include: attributes, backup, checksum, ciphers, client_cert, client_key, decompress, dest, force, force_basic_auth, group, headers, http_agent, mode, owner, selevel, serole, setype, seuser, timeout, tmp_dest, unredirected_headers, unsafe_writes, url, url_password, url_username, use_gssapi, use_netrc, use_proxy, validate_certs (attr, password, username).'
+fatal: [ceph-node-00.cephlab.com]: FAILED! => changed=false 
+  msg: 'Unsupported parameters for (ansible.builtin.get_url) module: register. Supported parameters include: attributes, backup, checksum, ciphers, client_cert, client_key, decompress, dest, force, force_basic_auth, group, headers, http_agent, mode, owner, selevel, serole, setype, seuser, timeout, tmp_dest, unredirected_headers, unsafe_writes, url, url_password, url_username, use_gssapi, use_netrc, use_proxy, validate_certs (attr, password, username).'
+fatal: [ceph-node-02.cephlab.com]: FAILED! => changed=false 
+  msg: 'Unsupported parameters for (ansible.builtin.get_url) module: register. Supported parameters include: attributes, backup, checksum, ciphers, client_cert, client_key, decompress, dest, force, force_basic_auth, group, headers, http_agent, mode, owner, selevel, serole, setype, seuser, timeout, tmp_dest, unredirected_headers, unsafe_writes, url, url_password, url_username, use_gssapi, use_netrc, use_proxy, validate_certs (attr, password, username).'
+
+PLAY RECAP *********************************************************************
+ceph-node-00.cephlab.com   : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+ceph-node-01.cephlab.com   : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+ceph-node-02.cephlab.com   : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+ceph-node-03.cephlab.com   : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+
+Friday 07 June 2024  03:26:31 -0400 (0:00:01.258)       0:00:01.356 *********** 
+=============================================================================== 
+deploy_ceph : Enable IBM Ceph repository -------------------------------- 1.26s
+
+PLAY [Bootstrap Ceph Cluster] **************************************************
+
+TASK [deploy_ceph : Enable IBM Ceph repository] ********************************
+Friday 07 June 2024  04:17:21 -0400 (0:00:00.075)       0:00:00.075 *********** 
+ok: [ceph-node-03.cephlab.com]
+ok: [ceph-node-01.cephlab.com]
+ok: [ceph-node-00.cephlab.com]
+ok: [ceph-node-02.cephlab.com]
+
+TASK [deploy_ceph : Install IBM Storage Ceph license] **************************
+Friday 07 June 2024  04:17:23 -0400 (0:00:02.556)       0:00:02.632 *********** 
+ok: [ceph-node-01.cephlab.com]
+ok: [ceph-node-00.cephlab.com]
+ok: [ceph-node-03.cephlab.com]
+ok: [ceph-node-02.cephlab.com]
+
+TASK [deploy_ceph : Accept IBM Storage Ceph license] ***************************
+Friday 07 June 2024  04:17:52 -0400 (0:00:28.203)       0:00:30.836 *********** 
+changed: [ceph-node-01.cephlab.com]
+changed: [ceph-node-02.cephlab.com]
+changed: [ceph-node-03.cephlab.com]
+changed: [ceph-node-00.cephlab.com]
+
+TASK [deploy_ceph : Install cephadm-ansible] ***********************************
+Friday 07 June 2024  04:17:52 -0400 (0:00:00.498)       0:00:31.334 *********** 
+ok: [ceph-node-00.cephlab.com]
+ok: [ceph-node-01.cephlab.com]
+changed: [ceph-node-03.cephlab.com]
+changed: [ceph-node-02.cephlab.com]
+
+PLAY RECAP *********************************************************************
+ceph-node-00.cephlab.com   : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ceph-node-01.cephlab.com   : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ceph-node-02.cephlab.com   : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ceph-node-03.cephlab.com   : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+Friday 07 June 2024  04:18:03 -0400 (0:00:10.795)       0:00:42.129 *********** 
+=============================================================================== 
+deploy_ceph : Install IBM Storage Ceph license ------------------------- 28.20s
+deploy_ceph : Install cephadm-ansible ---------------------------------- 10.80s
+deploy_ceph : Enable IBM Ceph repository -------------------------------- 2.56s
+deploy_ceph : Accept IBM Storage Ceph license --------------------------- 0.50s

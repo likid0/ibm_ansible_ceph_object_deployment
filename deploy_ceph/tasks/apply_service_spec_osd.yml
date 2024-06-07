@@ -10,19 +10,20 @@
     ceph_fsid: "{{ ceph_fsid.stdout }}"
   run_once: true
 
+- name: Determine OSD configuration type
+  set_fact:
+    osd_config: "{{ osd_configurations[osd_configuration_type] }}"
+  run_once: true
+
 - name: Render the OSD service spec template
   template:
-    src: "{{ item.template }}"
-    dest: "/tmp/{{ item.name }}.yml"
-  with_items:
-    - { name: 'osd_spec', template: 'osd_spec.j2' }
+    src: "osd_spec.j2"
+    dest: "/tmp/osd_spec.yml"
   delegate_to: "{{ groups['admin'][0] }}"
   run_once: true
 
 - name: Apply the OSD Ceph service spec
   ceph_orch_apply:
-    spec: "{{ lookup('file', '/tmp/' + item.name + '.yml') }}"
-  with_items:
-    - { name: 'osd_spec' }
+    spec: "{{ lookup('file', '/tmp/osd_spec.yml') }}"
   delegate_to: "{{ groups['admin'][0] }}"
   run_once: true

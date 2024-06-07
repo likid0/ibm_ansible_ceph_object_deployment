@@ -1,0 +1,21 @@
+---
+- name: Enable IBM Ceph repository
+  ansible.builtin.get_url:
+    url: https://public.dhe.ibm.com/ibmdl/export/pub/storage/ceph/ibm-storage-ceph-7-rhel-9.repo
+    dest: /etc/yum.repos.d/ibm-storage-ceph-7-rhel-9.repo
+    mode: '0644'
+
+- name: Install IBM Storage Ceph license
+  ansible.builtin.dnf:
+    name: ibm-storage-ceph-license
+    state: present
+
+- name: Accept IBM Storage Ceph license
+  ansible.builtin.file:
+    path: /usr/share/ibm-storage-ceph-license/accept
+    state: touch
+
+- name: Install cephadm-ansible
+  ansible.builtin.dnf:
+    name: cephadm-ansible
+    state: present

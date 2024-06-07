@@ -1,0 +1,51 @@
+---
+- name: Update OS to latest
+  block:
+    - name: Update all OS packages
+      dnf:
+        name: '*'
+        state: latest
+        update_cache: yes
+        update_only: yes
+      register: task_result
+      tags:
+        - update
+
+    - name: Reboot the server
+      tags: update
+      shell: "sleep 5 && reboot"
+      async: 1
+      poll: 0
+      when: task_result is changed
+
+    - name: Wait for the reboot and reconnect 
+      wait_for:
+        port: 22
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+        search_regex: OpenSSH
+        delay: 20
+        timeout: 180
+      connection: local
+
+    - name: Check the Uptime of the servers
+      shell: "uptime"
+      register: Uptime
+
+    - debug:
+        var: Uptime
+
+    - name: Install necessary packages
+      dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - python3-dns.noarch
+        - python3-pyOpenSSL.noarch
+        - bind-utils
+        - nc
+        - vim
+        - python3-pip.noarch
+
+    - name: Drop DNF Cache
+      command: 'dnf clean all'
+  when: update_cluster_os

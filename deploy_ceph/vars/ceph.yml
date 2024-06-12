@@ -18,7 +18,7 @@ registry_url: "cp.icr.io/cp"
 registry_username: "cp"
 
 # Password for the container registry
-registry_password: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE2NzgxOTY4MzgsImp0aSI6IjJmYzI3OTJiNDJkNjRlODA5MDkyM2NmZDZiMmNmOThmIn0.38H9O68ipck7w1zy_cmyIqKQqHBCzIJGT3fDvP6emMs"
+registry_password: "Registry Password"
 
 # apply your own spec file during bootstrap
 # apply_spec: /path/to/spec/file

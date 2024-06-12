@@ -1,4 +1,19 @@
 ---
+ name: Set additional Ceph configuration if single host
+  set_fact:
+    additional_ceph_configurations: 
+      - who: "global"
+        option: "mon_max_pg_per_osd"
+        value: "512"
+  when: single_host_defaults | default(false)
+  run_once: true
+
+- name: Merge additional Ceph configuration with main configurations
+  set_fact:
+    ceph_configurations: "{{ ceph_configurations | default([]) + additional_ceph_configurations | default([]) }}"
+  when: single_host_defaults | default(false)
+  run_once: true
+
 - name: Set Ceph configuration options
   ceph_config:
     action: set

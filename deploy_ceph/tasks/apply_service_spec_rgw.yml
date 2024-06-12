@@ -42,6 +42,7 @@
 
 - name: Include tasks to create EC pool
   include_tasks: create_ec_pool.yml
+  when: not single_host_defaults | default(false)
   tags: rgw_resources
 
 - name: Render the RGW service spec templates

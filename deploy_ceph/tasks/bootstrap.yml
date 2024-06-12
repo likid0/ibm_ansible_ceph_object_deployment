@@ -18,13 +18,58 @@
     cluster_network_fact: "{{ network_cidr }}"
   when: network_cidr is defined
 
-- name: Bootstrap Ceph cluster
-  cephadm_bootstrap:
-    mon_ip: "{{ monitor_address }}"
-    dashboard_user: "{{ dashboard_user }}"
-    dashboard_password: "{{ dashboard_password }}"
-    allow_fqdn_hostname: "{{ allow_fqdn_hostname }}"
-    cluster_network: "{{ cluster_network_fact | default(omit) }}"
-  delegate_to: "{{ groups['admin'][0] }}"
-  run_once: true
-  when: ceph_conf.stat.exists == false
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Count the number of hosts
+  set_fact:
+    host_count: "{{ groups['all'] | length }}"
+
+- name: Set single_host_defaults if only one host
+  set_fact:
+    single_host_defaults: true
+  when: host_count | int <= 1
+
+- name: Debug single_host_defaults value
+  debug:
+    var: single_host_defaults
+
+- name: Set apply_spec fact if spec_file_path is defined
+  set_fact:
+    apply_spec: "{{ spec_file_path }}"
+  when: spec_file_path is defined
+
+- name: Debug apply_spec value
+  debug:
+    var: apply_spec
+
+- block:
+    - name: Bootstrap Ceph cluster with apply_spec
+      cephadm_bootstrap:
+        mon_ip: "{{ monitor_address }}"
+        dashboard_user: "{{ dashboard_user }}"
+        dashboard_password: "{{ dashboard_password }}"
+        allow_fqdn_hostname: "{{ allow_fqdn_hostname }}"
+        cluster_network: "{{ cluster_network_fact | default(omit) }}"
+        single_host_defaults: "{{ single_host_defaults | default(false) }}"
+        apply_spec: "{{ apply_spec }}"
+      delegate_to: "{{ groups['admin'][0] }}"
+      run_once: true
+  when:
+    - ceph_conf.stat.exists == false
+    - apply_spec is defined
+
+- block:
+    - name: Bootstrap Ceph cluster without apply_spec
+      cephadm_bootstrap:
+        mon_ip: "{{ monitor_address }}"
+        dashboard_user: "{{ dashboard_user }}"
+        dashboard_password: "{{ dashboard_password }}"
+        allow_fqdn_hostname: "{{ allow_fqdn_hostname }}"
+        cluster_network: "{{ cluster_network_fact | default(omit) }}"
+        single_host_defaults: "{{ single_host_defaults | default(false) }}"
+      delegate_to: "{{ groups['admin'][0] }}"
+      run_once: true
+  when:
+    - ceph_conf.stat.exists == false
+    - apply_spec is not defined

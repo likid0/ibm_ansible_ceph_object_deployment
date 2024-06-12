@@ -24,13 +24,6 @@
   delegate_to: "{{ groups['admin'][0] }}"
   run_once: true
 
-- name: Read intermediate certificate (if exists)
-  command: cat /tmp/intermediate.crt
-  register: intermediate_cert
-  ignore_errors: true
-  delegate_to: "{{ groups['admin'][0] }}"
-  run_once: true
-
 - name: Read server certificate
   command: cat /tmp/ceph.crt
   register: server_cert

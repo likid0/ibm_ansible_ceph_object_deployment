@@ -30,7 +30,7 @@
   when: ec_profile_exists is failed or ec_profile_exists.rc != 0
 
 - name: Check if EC pool exists
-  shell: ceph osd pool get {{ item.rgw_zone }}.rgw.buckets.data
+  shell: ceph osd lspools | grep {{ item.rgw_zone }}.rgw.buckets.data
   register: ec_pool_exists
   ignore_errors: true
   delegate_to: "{{ groups['admin'][0] }}"

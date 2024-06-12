@@ -28,7 +28,7 @@
     msg: "Hostname: {{ inventory_hostname }}, IP Address: {{ ansible_facts['default_ipv4']['address'] }}"
 
 - name: Add host to the Ceph cluster
-  when: inventory_hostname not in groups['admin']
+  #  when: inventory_hostname not in groups['admin']
   ceph_orch_host:
     name: "{{ inventory_hostname }}"
     address: "{{ ansible_facts['default_ipv4']['address'] | default(ansible_facts['all_ipv4_addresses'][0]) }}"

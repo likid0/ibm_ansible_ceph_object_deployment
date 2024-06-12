@@ -18,7 +18,10 @@ registry_url: "cp.icr.io/cp"
 registry_username: "cp"
 
 # Password for the container registry
-registry_password: "your_registry_password"
+registry_password: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE2NzgxOTY4MzgsImp0aSI6IjJmYzI3OTJiNDJkNjRlODA5MDkyM2NmZDZiMmNmOThmIn0.38H9O68ipck7w1zy_cmyIqKQqHBCzIJGT3fDvP6emMs"
+
+# apply your own spec file during bootstrap
+# apply_spec: /path/to/spec/file
 
 # Flag to create a self-signed certificate for Ceph services
 create_self_signed_cert: true
@@ -35,3 +38,5 @@ rhel_subscription_password: "your_rhel_password"
 
 # Set this to true to update the cluster OS to the latest version
 update_cluster_os: true
+
+

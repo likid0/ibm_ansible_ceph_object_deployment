@@ -15,6 +15,7 @@ declare -A tag_descriptions=(
   ["rhel_registration"]="Register RHEL and enable required repositories."
   ["enable_ibm_repo"]="Enable IBM Ceph repository and install cephadm-ansible."
   ["update_os"]="Update the OS to the latest version and install necessary packages."
+  ["add_coredns"]="Set up CoreDNS for S3 Ceph Cluster."
 )
 
 list_tags() {
@@ -66,10 +67,12 @@ IFS=',' read -r -a tag_array <<< "$tags"
 
 # Check for 'preflight' tag
 run_preflight=false
+run_coredns=false
 for tag in "${tag_array[@]}"; do
   if [ "$tag" == "preflight" ]; then
     run_preflight=true
-    break
+  elif [ "$tag" == "add_coredns" ]; then
+    run_coredns=true
   fi
 done
 
@@ -87,11 +90,28 @@ if ! rpm -q cephadm-ansible &> /dev/null; then
   exit 1
 fi
 
-echo -e "${GREEN}Running Ansible playbook with tags: ${tags}${NC}"
-ansible-playbook -i inventory ceph_deploy.yml --tags "${tags}" | tee -a "$logfile"
-if [ $? -ne 0 ]; then
-  echo -e "${RED}Ansible playbook execution failed.${NC}"
-  exit 1
+# Run CoreDNS setup if add_coredns tag is present
+if [ "$run_coredns" = true ]; then
+  echo -e "${GREEN}Running CoreDNS setup...${NC}"
+  ansible-playbook -i inventory coredns_deploy.yml --tags "add_coredns" | tee -a "$logfile"
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}CoreDNS setup failed. Exiting...${NC}"
+    exit 1
+  fi
+fi
+
+# Remove 'add_coredns' from the tags if it exists
+other_tags=("${tag_array[@]/add_coredns/}")
+if [ "${#other_tags[@]}" -gt 0 ]; then
+  other_tags_str=$(IFS=, ; echo "${other_tags[*]}")
+  if [ -n "$other_tags_str" ]; then
+    echo -e "${GREEN}Running Ansible playbook with tags: ${other_tags_str}${NC}"
+    ansible-playbook -i inventory ceph_deploy.yml --tags "${other_tags_str}" | tee -a "$logfile"
+    if [ $? -ne 0 ]; then
+      echo -e "${RED}Ansible playbook execution failed.${NC}"
+      exit 1
+    fi
+  fi
 fi
 
 echo -e "${GREEN}Ansible playbook execution completed successfully.${NC}"

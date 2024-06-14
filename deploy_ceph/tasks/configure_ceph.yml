@@ -1,5 +1,5 @@
 ---
- name: Set additional Ceph configuration if single host
+- name: Set additional Ceph configuration if single host
   set_fact:
     additional_ceph_configurations: 
       - who: "global"

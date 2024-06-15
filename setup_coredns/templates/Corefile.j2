@@ -1,0 +1,16 @@
+.:53 {
+    log
+    errors
+    debug
+    forward . {% if dns_forward_1 is defined and dns_forward_2 is defined %}{{ dns_forward_1 }} {{ dns_forward_2 }}{% else %}/etc/resolv.conf{% endif %}
+    cache
+}
+
+{{ coredns_domain }} {
+    file /etc/coredns/{{ coredns_domain }}
+    prometheus     # enable metrics
+    errors         # show errors
+    log            # enable query logs
+    debug
+}
+

@@ -1,0 +1,11 @@
+---
+# defaults file for setup_coredns
+
+# IP address of the ingress service
+ingress_ip: "{{ lookup('env', 'INGRESS_IP') }}" # This can be set from an environment variable or another source
+
+# CoreDNS container image
+coredns_image: "coredns/coredns:latest"
+
+# Node where CoreDNS should run
+

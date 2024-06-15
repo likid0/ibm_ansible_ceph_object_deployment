@@ -1,0 +1,7 @@
+---
+- include_tasks: configure_coredns.yml
+  tags: add_coredns
+- include_tasks: run_coredns.yml
+  tags: add_coredns
+- include_tasks: configure_dns_clients.yml
+  tags: add_dns_client

@@ -1,0 +1,11 @@
+[Unit]
+Description=CoreDNS DNS server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/podman run --rm --name coredns -v /etc/coredns:/etc/coredns:Z -p 53:53/udp {{ coredns_image }} -conf /etc/coredns/Corefile
+Restart=always
+ExecStop=/usr/bin/podman stop coredns
+
+[Install]
+WantedBy=multi-user.target

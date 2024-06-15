@@ -1,0 +1,88 @@
+---
+- name: Ensure coredns_node is set
+  set_fact:
+    coredns_node: "{{ groups['all'][0] }}"
+  when: coredns_node is not defined
+  run_once: true
+  tags:
+    - add_coredns
+    - add_dns_client
+
+- name: Gather network facts for CoreDNS node
+  setup:
+    gather_subset:
+      - 'network'
+  delegate_to: "{{ coredns_node }}"
+  run_once: true
+  tags:
+    - add_dns_client
+
+- name: Gather network facts for all nodes
+  setup:
+    gather_subset:
+      - 'network'
+  tags:
+    - add_dns_client
+
+- name: Get CoreDNS node IP address
+  set_fact:
+    coredns_ip: "{{ ansible_facts['default_ipv4']['address'] }}"
+  run_once: true
+  delegate_to: "{{ coredns_node }}"
+  tags:
+    - add_dns_client
+
+- name: Get the connection name for the primary network interface
+  shell: nmcli dev show "{{ ansible_facts['default_ipv4']['interface'] }}" | grep GENERAL.CONNECTION | awk -F ':' '{print $2}' | awk '{$1=$1};1'
+  register: connection_name
+  changed_when: false
+  tags:
+    - add_dns_client
+
+- name: Disable DHCP DNS configuration on nodes
+  shell: nmcli con mod "{{ connection_name.stdout }}" ipv4.ignore-auto-dns yes
+  tags:
+    - add_dns_client
+
+- name: Configure DNS to point to the CoreDNS node
+  shell: nmcli con mod "{{ connection_name.stdout }}" ipv4.dns "{{ coredns_ip }}"
+  tags:
+    - add_dns_client
+
+- name: Ensure DNS settings are applied
+  command: nmcli con up "{{ connection_name.stdout }}"
+  when: connection_name.stdout != ""
+  tags:
+    - add_dns_client
+
+- name: Remove cloud-init entry from NetworkManager conf.d
+  ansible.builtin.file:
+    path: /etc/NetworkManager/conf.d/99-cloud-init.conf
+    state: absent
+  tags:
+    - add_dns_client
+
+- name: Restart NetworkManager to apply changes
+  service:
+    name: NetworkManager
+    state: restarted
+  tags:
+    - add_dns_client
+
+- name: Check if firewalld is installed
+  command: systemctl is-active firewalld
+  register: firewalld_status
+  failed_when: false
+  changed_when: false
+  tags:
+    - add_dns_client
+
+- name: Configure firewalld rules to enable access to DNS
+  ansible.posix.firewalld:
+    service: dns
+    state: enabled
+    permanent: true
+    immediate: true
+  when: firewalld_status.rc == 0 and firewalld_status.stdout == "active"
+  tags:
+    - add_dns_client

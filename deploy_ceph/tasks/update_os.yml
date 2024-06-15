@@ -34,6 +34,13 @@
     - debug:
         var: Uptime
 
+    - name: Install ansible Collections
+      command: ansible-galaxy collection install  "{{ item }}"
+      with_items: 
+        - community.general
+        - ansible.posix
+        - community.crypto
+
     - name: Install necessary packages
       dnf:
         name: "{{ item }}"

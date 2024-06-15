@@ -1,0 +1,17 @@
+---
+# Domain to configure in CoreDNS
+coredns_domain: "s3.example.com"
+
+# IP address of the VIP ingress service
+ingress_ips:
+  - "192.168.1.200"
+  - "192.168.1.201"
+
+# CoreDNS container image
+coredns_image: "docker.io/coredns/coredns:latest"
+
+# Node where CoreDNS should run, if not defined it will run on the fist host of the inventory
+#coredns_node: "coredns-node"
+
+dns_forward_1: "192.168.122.1" 
+dns_forward_2: "8.8.4.4"

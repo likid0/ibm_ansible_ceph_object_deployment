@@ -1,0 +1,7 @@
+---
+- name: Restart CoreDNS
+  systemd:
+    name: coredns
+    state: restarted
+    daemon_reload: yes
+  delegate_to: "{{ coredns_node }}"

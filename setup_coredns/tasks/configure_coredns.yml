@@ -1,0 +1,42 @@
+---
+- name: Ensure coredns_node is set
+  set_fact:
+    coredns_node: "{{ groups['all'][0] }}"
+  when: coredns_node is not defined
+  run_once: true
+  tags: add_coredns
+
+- name: Create CoreDNS configuration directory
+  file:
+    path: /etc/coredns
+    state: directory
+  delegate_to: "{{ coredns_node }}"
+  tags: add_coredns
+  run_once: true
+
+- name: Render CoreDNS Corefile
+  template:
+    src: Corefile.j2
+    dest: /etc/coredns/Corefile
+  delegate_to: "{{ coredns_node }}"
+  notify: Restart CoreDNS
+  run_once: true
+  tags: add_coredns
+
+- name: Render CoreDNS zone file
+  template:
+    src: zonefile.j2
+    dest: /etc/coredns/{{ coredns_domain }}
+  delegate_to: "{{ coredns_node }}"
+  run_once: true
+  notify: Restart CoreDNS
+  tags: add_coredns
+
+- name: Render CoreDNS service file
+  template:
+    src: coredns.service.j2
+    dest: /etc/systemd/system/coredns.service
+  delegate_to: "{{ coredns_node }}"
+  notify: Restart CoreDNS
+  run_once: true
+  tags: add_coredns

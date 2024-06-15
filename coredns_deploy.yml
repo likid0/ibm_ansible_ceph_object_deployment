@@ -1,0 +1,9 @@
+---
+- name: CoreDNS setup for S3 Ceph Cluster
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - role: setup_coredns
+  vars_files:
+    - setup_coredns/vars/main.yml

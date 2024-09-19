@@ -53,6 +53,7 @@
         cluster_network: "{{ cluster_network_fact | default(omit) }}"
         single_host_defaults: "{{ single_host_defaults | default(false) }}"
         apply_spec: "{{ apply_spec }}"
+        image: "{{ ceph_image | default(omit) }}"
       delegate_to: "{{ groups['admin'][0] }}"
       run_once: true
   when:
@@ -68,6 +69,7 @@
         allow_fqdn_hostname: "{{ allow_fqdn_hostname }}"
         cluster_network: "{{ cluster_network_fact | default(omit) }}"
         single_host_defaults: "{{ single_host_defaults | default(false) }}"
+        image: "{{ ceph_image | default(omit) }}"
       delegate_to: "{{ groups['admin'][0] }}"
       run_once: true
   when:

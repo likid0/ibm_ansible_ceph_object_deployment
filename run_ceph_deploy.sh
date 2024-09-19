@@ -76,14 +76,29 @@ for tag in "${tag_array[@]}"; do
   fi
 done
 
+# Read the value of distribution_origin from ceph.yml
+distribution_origin=$(grep 'distribution_origin:' deploy_ceph/vars/ceph.yml | awk '{print $2}')
+
 if [ "$run_preflight" = true ]; then
   echo -e "${GREEN}Running preflight checks...${NC}"
-  ansible-playbook -i inventory /usr/share/cephadm-ansible/cephadm-preflight.yml --extra-vars "ceph_origin=ibm" | tee -a "$logfile"
+
+  if [ "$ceph_release" == "ibm" ]; then
+    extra_vars="--extra-vars ceph_origin=ibm"
+  elif [ -n "$ceph_release" ]; then
+    # If ceph_release is set and not empty, use it
+    extra_vars="--extra-vars ceph_release=$ceph_release"
+  else
+    # If ceph_release is empty or not set, don't pass any extra_vars
+    extra_vars=""
+  fi
+
+  ansible-playbook -i inventory /usr/share/cephadm-ansible/cephadm-preflight.yml $extra_vars | tee -a "$logfile"
   if [ $? -ne 0 ]; then
     echo -e "${RED}Preflight checks failed. Exiting...${NC}"
     exit 1
   fi
 fi
+
 
 if ! rpm -q cephadm-ansible &> /dev/null; then
   echo -e "${RED}Error: cephadm-ansible package is not installed.${NC}"

@@ -1,4 +1,9 @@
 ---
+- name: Install cephadm-ansible
+  ansible.builtin.dnf:
+    name: cephadm-ansible
+    state: present
+
 - name: Check if Ceph cluster already exists
   stat:
     path: /etc/ceph/ceph.conf
@@ -12,6 +17,7 @@
     registry_url: "{{ registry_url }}"
     registry_username: "{{ registry_username }}"
     registry_password: "{{ registry_password }}"
+  when: ceph_release == "ibm"
 
 - name: Set cluster_network fact if network_cidr is defined
   set_fact:

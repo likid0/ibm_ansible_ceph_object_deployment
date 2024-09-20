@@ -4,8 +4,9 @@ placement:
   label: ingress
 spec:
   backend_service: {{ backend_service }}
-  virtual_ips_list:
-    - {{ virt_ip }}
+  virtual_ip: {{ virt_ip }}
+#  virtual_ips_list:
+#    - {{ virt_ip }}
   monitor_port: 1967
   frontend_port: {{ frontend_port }}
   ssl_cert: |

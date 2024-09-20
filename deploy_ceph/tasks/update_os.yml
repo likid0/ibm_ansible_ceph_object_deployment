@@ -34,6 +34,11 @@
     - debug:
         var: Uptime
 
+    - name: Install cephadm-ansible
+      ansible.builtin.dnf:
+        name: cephadm-ansible
+        state: present
+
     - name: Install ansible Collections
       command: ansible-galaxy collection install  "{{ item }}"
       with_items: 

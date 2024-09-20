@@ -77,7 +77,7 @@ for tag in "${tag_array[@]}"; do
 done
 
 # Read the value of distribution_origin from ceph.yml
-distribution_origin=$(grep 'distribution_origin:' deploy_ceph/vars/ceph.yml | awk '{print $2}')
+ceph_release=$(grep 'ceph_release:' deploy_ceph/vars/ceph.yml | awk '{print $2}')
 
 if [ "$run_preflight" = true ]; then
   echo -e "${GREEN}Running preflight checks...${NC}"

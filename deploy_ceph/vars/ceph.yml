@@ -1,6 +1,6 @@
 # Ceph Bootstrap Variables
 # IP address of the monitor node
-monitor_address: "192.168.122.12"
+monitor_address: "192.168.122.138"
 
 # Username for the Ceph dashboard
 dashboard_user: "admin"

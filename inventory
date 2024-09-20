@@ -1,12 +1,12 @@
-ceph-node-00.cephlab.com labels='_admin,osd,mon,mgr,rgwsync'
-ceph-node-01.cephlab.com labels='osd,mon,mgr,rgwsync'
-ceph-node-02.cephlab.com labels='osd,mon,mgr,rgw,ingress'
-ceph-node-03.cephlab.com labels='osd,mgr,rgw,ingress'
+ceph-node-04.cephlab.com labels='_admin,osd,mon,mgr,rgwsync'
+ceph-node-05.cephlab.com labels='osd,mon,mgr,rgwsync'
+ceph-node-06.cephlab.com labels='osd,mon,mgr,rgw,ingress'
+ceph-node-07.cephlab.com labels='osd,mgr,rgw,ingress'
 
 [admin]
-ceph-node-00.cephlab.com monitor_address=192.168.122.12 labels='_admin,osd,mon,mgr,rgwsync'
+ceph-node-04.cephlab.com monitor_address=192.168.122.12 labels='_admin,osd,mon,mgr,rgwsync'
 
 [nodes]
-ceph-node-01.cephlab.com labels='osd,mon,mgr,rgwsync'
-ceph-node-02.cephlab.com labels='osd,mon,mgr,rgw,ingress'
-ceph-node-03.cephlab.com labels='osd,mgr,rgw,ingress'
+ceph-node-05.cephlab.com labels='osd,mon,mgr,rgwsync'
+ceph-node-06.cephlab.com labels='osd,mon,mgr,rgw,ingress'
+ceph-node-07.cephlab.com labels='osd,mgr,rgw,ingress'

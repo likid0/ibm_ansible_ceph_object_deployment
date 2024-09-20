@@ -9,6 +9,7 @@
 - import_tasks: enable_ibm_ceph_repo.yml
   tags:
     - enable_ibm_repo
+  when: ceph_release == "ibm"
 - import_tasks: bootstrap.yml
   tags: 
     - bootstrap

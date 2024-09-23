@@ -7,6 +7,7 @@
 - import_tasks: update_os.yml
   tags:
     - update_os
+  when: ceph_release != "main"
 - import_tasks: bootstrap.yml
   tags: 
     - bootstrap

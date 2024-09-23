@@ -87,6 +87,7 @@ done
 
 # Read the value of distribution_origin from ceph.yml
 ceph_release=$(grep 'ceph_release:' deploy_ceph/vars/ceph.yml | awk '{print $2}')
+echo "ceph_release is: $ceph_release"
 
 if [ "$run_preflight" = true ]; then
   echo -e "${GREEN}Running preflight checks...${NC}"
@@ -100,6 +101,7 @@ if [ "$run_preflight" = true ]; then
     # If ceph_release is empty or not set, don't pass any extra_vars
     extra_vars=""
   fi
+fi
 
 # Check if ansible-playbook exists
 if ! command -v ansible-playbook &> /dev/null; then
@@ -108,6 +110,7 @@ if ! command -v ansible-playbook &> /dev/null; then
 fi
    
 if [ "$ceph_release" == "ibm" ]; then
+   echo -e "${YELLOW}IBM Ceph release detected. Downloading cephadm...${NC}"
    ansible-galaxy collection install community.general || error_exit "Failed to install ansible-galaxy on admin node"
 
   if [ ! -f /etc/yum.repos.d/ibm-storage-ceph-7-rhel-9.repo ]; then
@@ -116,16 +119,34 @@ if [ "$ceph_release" == "ibm" ]; then
   else
     echo -e "${GREEN}IBM Ceph repository file already exists. Skipping download.${NC}"
   fi
+  dnf install cephadm-ansible -y || error_exit "Failed to install Cephadm-ansible"
+  ansible-playbook -i inventory  ceph_deploy.yml --tags update_os || error_exit "Failed update os tasks"
 
-   dnf install cephadm-ansible -y || error_exit "Failed to install Cephadm-ansible"
-   ansible-playbook -i inventory  ceph_deploy.yml --tags update_os || error_exit "Failed update os tasks"
+elif [ "$ceph_release" == "main" ]; then
+    echo -e "${YELLOW}Main Ceph release detected. Downloading cephadm...${NC}"
+    CADM="https://raw.githubusercontent.com/ceph/ceph/main/src/cephadm/cephadm.py"
+    echo -e "${YELLOW}Downloading cephadm from the source...${NC}"
+    cd /root
+    git clone https://github.com/ceph/ceph.git
+    ln -s /root/ceph/src/cephadm/cephadm.py /usr/sbin/cephadm
+    echo -e "${GREEN}cephadm downloaded and added"
+    dnf -y install python3 chrony lvm2 podman nano strace firewalld tcpdump ceph-common || error_exit "Failed to install RPMs"
+    cd -
+else
+  echo -e "${YELLOW}Ceph release detected. Downloading cephadm...${NC}"
+  dnf install cephadm-ansible -y || error_exit "Failed to install Cephadm-ansible"
+  ansible-playbook -i inventory  ceph_deploy.yml --tags update_os || error_exit "Failed update os tasks"
 fi
 
-ansible-playbook -i inventory /usr/share/cephadm-ansible/cephadm-preflight.yml $extra_vars | tee -a "$logfile" || error_exit "Failed Ansible preflight"
+if [ "$run_preflight" = true ] && [ "$ceph_release" != "main" ]; then
+  echo -e "${GREEN}Running preflight checks...${NC}"
+  ansible-playbook -i inventory /usr/share/cephadm-ansible/cephadm-preflight.yml $extra_vars | tee -a "$logfile" || error_exit "Failed Ansible preflight"
   if [ $? -ne 0 ]; then
     echo -e "${RED}Preflight checks failed. Exiting...${NC}"
     exit 1
   fi
+else
+  echo -e "${YELLOW}Skipping preflight checks because ceph_release is 'main'.${NC}"
 fi
 
 

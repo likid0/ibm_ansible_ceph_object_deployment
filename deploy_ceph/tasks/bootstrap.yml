@@ -1,8 +1,20 @@
 ---
+- name: Check if cephadm-ansible package is installed
+  ansible.builtin.package_facts:
+    manager: "auto"
+
+- name: Check if /usr/bin/cephadm exists
+  ansible.builtin.stat:
+    path: /usr/bin/cephadm
+  register: cephadm_binary
+
 - name: Install cephadm-ansible
   ansible.builtin.dnf:
     name: cephadm-ansible
     state: present
+  when: 
+    - "'cephadm-ansible' not in ansible_facts.packages"
+    - cephadm_binary.stat.exists == false
 
 - name: Check if Ceph cluster already exists
   stat:
@@ -30,8 +42,10 @@
     cluster_network_fact: "{{ network_cidr }}"
   when: network_cidr is defined
 
-- name: Gather facts
+- name: Gather facts for all hosts
   ansible.builtin.setup:
+    gather_subset:
+      - 'all'
 
 - name: Count the number of hosts
   set_fact:
@@ -55,10 +69,21 @@
   debug:
     var: apply_spec
 
+- name: Retrieve the monitor node IP address from the admin group
+  set_fact:
+    monitor_ip: "{{ ansible_facts['default_ipv4']['address'] }}"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: Display the monitor IP address
+  debug:
+    msg: "The monitor node IP is: {{ monitor_ip }}"
+
+
 - block:
     - name: Bootstrap Ceph cluster with apply_spec
       cephadm_bootstrap:
-        mon_ip: "{{ monitor_address }}"
+        mon_ip: "{{ monitor_ip }}"
         dashboard_user: "{{ dashboard_user }}"
         dashboard_password: "{{ dashboard_password }}"
         allow_fqdn_hostname: "{{ allow_fqdn_hostname }}"
@@ -75,7 +100,7 @@
 - block:
     - name: Bootstrap Ceph cluster without apply_spec
       cephadm_bootstrap:
-        mon_ip: "{{ monitor_address }}"
+        mon_ip: "{{ monitor_ip }}"
         dashboard_user: "{{ dashboard_user }}"
         dashboard_password: "{{ dashboard_password }}"
         allow_fqdn_hostname: "{{ allow_fqdn_hostname }}"
@@ -87,3 +112,15 @@
   when:
     - ceph_conf.stat.exists == false
     - apply_spec is not defined
+
+- name: Render the OSD service spec template
+  template:
+    src: "registry.j2"
+    dest: "/tmp/registry.json"
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true
+
+- name: execute registry config
+  shell: 'ceph config-key set mgr/cephadm/registry_credentials "$(cat file.json)"'
+  delegate_to: "{{ groups['admin'][0] }}"
+  run_once: true

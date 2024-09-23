@@ -1,16 +1,16 @@
 # Ceph Bootstrap Variables
 # IP address of the monitor node
-monitor_address: "192.168.100.244"
+# monitor_address: "192.168.100.60"
 
 # Username for the Ceph dashboard
 dashboard_user: "admin"
 
 # Select upstream version like 'squid' or ibm
-ceph_release: ibm
+ceph_release: main
 
 # only required if you want to select an specific version, the image has to be the same release as the ceph_release var
 #ceph_image: quay.io/ceph/ceph:v19.1.1-20240822
-# "quay.ceph.io/ceph-ci/ceph:main"
+ceph_image: quay.ceph.io/ceph-ci/ceph:main
 
 # Password for the Ceph dashboard
 dashboard_password: "admin"
@@ -25,7 +25,7 @@ registry_url: "cp.icr.io/cp"
 registry_username: "cp"
 
 # Password for the container registry
-registry_password: "XXXX"
+registry_password: ""
 
 # apply your own spec file during bootstrap
 # apply_spec: /path/to/spec/file

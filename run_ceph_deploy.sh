@@ -63,6 +63,15 @@ if [ -z "$logfile" ]; then
   usage
 fi
 
+command_exists() {
+  command -v "$1" &> /dev/null
+}
+
+error_exit() {
+  echo -e "${RED}Error: $1${NC}" >&2
+  exit 1
+}
+
 IFS=',' read -r -a tag_array <<< "$tags"
 
 # Check for 'preflight' tag
@@ -92,7 +101,27 @@ if [ "$run_preflight" = true ]; then
     extra_vars=""
   fi
 
-  ansible-playbook -i inventory /usr/share/cephadm-ansible/cephadm-preflight.yml $extra_vars | tee -a "$logfile"
+# Check if ansible-playbook exists
+if ! command -v ansible-playbook &> /dev/null; then
+    echo "Ansible not found, running update_os and enable_ibm_repo first..."
+    ssh $(cat inventory | grep  _admin  | awk '{print $1}' | uniq) 'dnf install ansible-core -y' || error_exit "Failed to install Ansible on admin node"
+fi
+   
+if [ "$ceph_release" == "ibm" ]; then
+   ansible-galaxy collection install community.general || error_exit "Failed to install ansible-galaxy on admin node"
+
+  if [ ! -f /etc/yum.repos.d/ibm-storage-ceph-7-rhel-9.repo ]; then
+    echo -e "${YELLOW}IBM Ceph repository file not found. Downloading...${NC}"
+    curl -s https://public.dhe.ibm.com/ibmdl/export/pub/storage/ceph/ibm-storage-ceph-7-rhel-9.repo | sudo tee /etc/yum.repos.d/ibm-storage-ceph-7-rhel-9.repo || error_exit "Failed to download IBM Ceph repository"
+  else
+    echo -e "${GREEN}IBM Ceph repository file already exists. Skipping download.${NC}"
+  fi
+
+   dnf install cephadm-ansible -y || error_exit "Failed to install Cephadm-ansible"
+   ansible-playbook -i inventory  ceph_deploy.yml --tags update_os || error_exit "Failed update os tasks"
+fi
+
+ansible-playbook -i inventory /usr/share/cephadm-ansible/cephadm-preflight.yml $extra_vars | tee -a "$logfile" || error_exit "Failed Ansible preflight"
   if [ $? -ne 0 ]; then
     echo -e "${RED}Preflight checks failed. Exiting...${NC}"
     exit 1
@@ -100,19 +129,15 @@ if [ "$run_preflight" = true ]; then
 fi
 
 
-if ! rpm -q cephadm-ansible &> /dev/null; then
-  echo -e "${RED}Error: cephadm-ansible package is not installed.${NC}"
-  exit 1
-fi
 
 # Run CoreDNS setup if add_coredns tag is present
 if [ "$run_coredns" = true ]; then
   echo -e "${GREEN}Running CoreDNS setup...${NC}"
-  ansible-playbook -i inventory coredns_deploy.yml --tags "add_coredns" | tee -a "$logfile"
-  if [ $? -ne 0 ]; then
+  ansible-playbook -i inventory coredns_deploy.yml --tags "add_coredns" | tee -a "$logfile" || error_exit "CoreDNS setup failed"
+fi
+if [ $? -ne 0 ]; then
     echo -e "${RED}CoreDNS setup failed. Exiting...${NC}"
     exit 1
-  fi
 fi
 
 # Remove 'add_coredns' from the tags if it exists
@@ -121,7 +146,7 @@ if [ "${#other_tags[@]}" -gt 0 ]; then
   other_tags_str=$(IFS=, ; echo "${other_tags[*]}")
   if [ -n "$other_tags_str" ]; then
     echo -e "${GREEN}Running Ansible playbook with tags: ${other_tags_str}${NC}"
-    ansible-playbook -i inventory ceph_deploy.yml --tags "${other_tags_str}" | tee -a "$logfile"
+    ansible-playbook -i inventory ceph_deploy.yml --tags "${other_tags_str}" | tee -a "$logfile" || error_exit "Failed ansible-playbook"
     if [ $? -ne 0 ]; then
       echo -e "${RED}Ansible playbook execution failed.${NC}"
       exit 1

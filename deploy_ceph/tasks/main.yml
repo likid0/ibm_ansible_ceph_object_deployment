@@ -3,13 +3,10 @@
 - import_tasks: register_rhel.yml
   tags: 
     - rhel_registration
+  when: ansible_facts['os_family'] == "RedHat"
 - import_tasks: update_os.yml
   tags:
     - update_os
-- import_tasks: enable_ibm_ceph_repo.yml
-  tags:
-    - enable_ibm_repo
-  when: ceph_release == "ibm"
 - import_tasks: bootstrap.yml
   tags: 
     - bootstrap

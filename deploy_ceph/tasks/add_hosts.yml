@@ -14,7 +14,7 @@
 
 - name: Copy Ceph cluster public SSH key to new host
   shell: |
-    ssh-copy-id -f -i /root/ceph.pub root@{{ inventory_hostname }}
+    ssh-copy-id -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -f -i /root/ceph.pub root@{{ inventory_hostname }}
   delegate_to: "{{ groups['admin'][0] }}"
 
 - name: Ensure known hosts file is updated

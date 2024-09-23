@@ -11,13 +11,19 @@
   delegate_to: "{{ groups['admin'][0] }}"
   run_once: true
 
+- name: Gather installed packages
+  package_facts:
+    manager: "auto" 
+
 - name: Login to Ceph registry
   cephadm_registry_login:
     state: "{{ state }}"
     registry_url: "{{ registry_url }}"
     registry_username: "{{ registry_username }}"
     registry_password: "{{ registry_password }}"
-  when: ceph_release == "ibm"
+  when: 
+    - ceph_release == "ibm"
+    - "'cephadm-ansible' in ansible_facts.packages"
 
 - name: Set cluster_network fact if network_cidr is defined
   set_fact:

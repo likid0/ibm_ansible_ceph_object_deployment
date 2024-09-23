@@ -16,7 +16,9 @@
       shell: "sleep 5 && reboot"
       async: 1
       poll: 0
-      when: task_result is changed
+      when:
+        - task_result is changed
+        - "'admin' not in group_names" 
 
     - name: Wait for the reboot and reconnect 
       wait_for:
@@ -26,38 +28,57 @@
         delay: 20
         timeout: 180
       connection: local
+      when:
+        - task_result is changed
 
     - name: Check the Uptime of the servers
       shell: "uptime"
       register: Uptime
-
-    - debug:
-        var: Uptime
-
-    - name: Install cephadm-ansible
-      ansible.builtin.dnf:
-        name: cephadm-ansible
-        state: present
-
-    - name: Install ansible Collections
-      command: ansible-galaxy collection install  "{{ item }}"
-      with_items: 
-        - community.general
-        - ansible.posix
-        - community.crypto
-
-    - name: Install necessary packages
-      dnf:
-        name: "{{ item }}"
-        state: present
-      loop:
-        - python3-dns.noarch
-        - python3-pyOpenSSL.noarch
-        - bind-utils
-        - nc
-        - vim
-        - python3-pip.noarch
-
-    - name: Drop DNF Cache
-      command: 'dnf clean all'
+      when:
+        - task_result is changed
   when: update_cluster_os
+
+- name: Manage IBM Ceph repository and license
+  block:
+    - name: Enable IBM Ceph repository
+      ansible.builtin.get_url:
+        url: https://public.dhe.ibm.com/ibmdl/export/pub/storage/ceph/ibm-storage-ceph-7-rhel-9.repo
+        dest: /etc/yum.repos.d/ibm-storage-ceph-7-rhel-9.repo
+        mode: '0644'
+
+    - name: Install IBM Storage Ceph license
+      ansible.builtin.dnf:
+        name: ibm-storage-ceph-license
+        state: present
+
+    - name: Accept IBM Storage Ceph license
+      ansible.builtin.file:
+        path: /usr/share/ibm-storage-ceph-license/accept
+        state: touch
+  when: ceph_release == "ibm"
+
+- name: Install cephadm-ansible
+  ansible.builtin.dnf:
+    name: cephadm-ansible
+    state: present
+
+- name: Install ansible Collections
+  command: ansible-galaxy collection install  "{{ item }}"
+  with_items: 
+    - community.general
+    - ansible.posix
+    - community.crypto
+
+- name: Install necessary packages
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - python3-dns.noarch
+    - bind-utils
+    - nc
+    - vim
+    - python3-pip.noarch
+
+- name: Drop DNF Cache
+  command: 'dnf clean all'
